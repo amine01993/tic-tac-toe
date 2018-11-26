@@ -43,6 +43,38 @@ function winning(board, player) {
     return false;
 }
 
+//
+function draw(board) {
+    const lines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
+    ];
+
+    // if one cell is empty return false
+    for(let i = 0; i < board.length; i++) {
+        if ( board[i] === null ) {
+            return false
+        }
+    }
+
+    // if one of the players won return false
+    for(let i = 0; i < lines.length; i++) {
+        let line = lines[i]
+        if ( board[line[0]] === board[line[1]] && 
+            board[line[1]] === board[line[2]] ) {
+            return false
+        }
+    }
+
+    return true
+}
+
 // the main minimax function
 function minimax(newBoard, player, huPlayer, aiPlayer){
   
@@ -75,14 +107,11 @@ function minimax(newBoard, player, huPlayer, aiPlayer){
 
         // collect the score resulted from calling minimax 
         //on the opponent of the current player
-        if (player === aiPlayer) {
-            let result = minimax(newBoard, huPlayer, huPlayer, aiPlayer);
-            move.score = result.score;
-        }
-        else {
-            let result = minimax(newBoard, aiPlayer, huPlayer, aiPlayer);
-            move.score = result.score;
-        }
+        let result = minimax(
+            newBoard, player === aiPlayer ? huPlayer : aiPlayer, 
+            huPlayer, aiPlayer
+        )
+        move.score = result.score
 
         // reset the spot to empty
         newBoard[availSpots[i]] = null;
@@ -122,4 +151,4 @@ function randomBool() {
     return Math.random() < .5
 }
 
-export { winning, minimax }
+export { winning, minimax, draw }

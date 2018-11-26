@@ -1,6 +1,6 @@
 import React from 'react'
 import Board from './Board'
-import { winning, minimax } from '../functions'
+import { winning, minimax, draw } from '../functions'
 
 export default class Game extends React.Component {
     constructor(props) {
@@ -13,7 +13,8 @@ export default class Game extends React.Component {
             ],
             stepNumber: 0,
             turn: 'X', // X human, O ai
-            winner: null
+            winner: null,
+            isDraw: false
         };
         // prop gameOption = PLAYER_COMPUTER
 
@@ -36,16 +37,18 @@ export default class Game extends React.Component {
 
         // otherwise we fill the clicked square
         squares[i] = currentPlayer
-        let gameOver = winning(squares, currentPlayer)
+        let notDraw = winning(squares, currentPlayer)
+        let _draw = draw(squares)
         currentPlayer = currentPlayer === 'X' ? 'O' : 'X'
 
-        if(!gameOver) {
+        if(!notDraw && !_draw) {
             // when the gameOption is player vs com.
             // computer turn and we assume aiPlayer is 'O'
             const bestMove = minimax(squares, currentPlayer, 'X', 'O')
             console.log('bestMove', bestMove)
             squares[bestMove.index] = 'O'
-            gameOver = winning(squares, currentPlayer)
+            notDraw = winning(squares, currentPlayer)
+            _draw = draw(squares)
             currentPlayer = currentPlayer === 'X' ? 'O' : 'X'
         }
         
@@ -55,7 +58,8 @@ export default class Game extends React.Component {
             }]),
             stepNumber: history.length,
             turn: currentPlayer,
-            winner: gameOver ? (currentPlayer === 'X' ? 'O' : 'X') : null
+            winner: notDraw ? (currentPlayer === 'X' ? 'O' : 'X') : null,
+            isDraw: _draw
         });
     }
 
@@ -70,8 +74,10 @@ export default class Game extends React.Component {
         
         this.setState({
             stepNumber: step,
-            turn: (step % 2) === 0 ? 'X' : 'O',
-            winner: winning(squares, currentPlayer) ? currentPlayer : null
+            // turn: (step % 2) === 0 ? 'X' : 'O',
+            turn: 'X',
+            winner: winning(squares, currentPlayer) ? currentPlayer : null,
+            isDraw: draw(squares)
         });
     }
 
@@ -85,7 +91,11 @@ export default class Game extends React.Component {
                 'Go to game start';
             return (
                 <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    <button
+                        className="button secondary small" 
+                        onClick={() => this.jumpTo(move)}>
+                        {desc}
+                    </button>
                 </li>
             );
         });
@@ -94,6 +104,9 @@ export default class Game extends React.Component {
         if (this.state.winner) {
             status = "Winner: " + this.state.winner;
         } 
+        else if (this.state.isDraw) {
+            status = "Draw"
+        }
         else {
             status = "Next player: " + this.state.turn;
         }
@@ -108,7 +121,7 @@ export default class Game extends React.Component {
                 </div>
                 <div className="game-info">
                 <div>{status}</div>
-                <ol>{moves}</ol>
+                <ol className="moves-list">{moves}</ol>
                 </div>
             </div>
         );
